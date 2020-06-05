@@ -1,44 +1,67 @@
 <!-- 个人主页帖子列表 -->
 <template>
   <div class>
-    我的帖子列表
+    <bbs-list-item v-for="(item,index) in list" :item="item" :key="'BbsListItem'+index"></bbs-list-item>
+    <!-- {{this.$route.query.uid?'id='+this.$route.query.uid:'我'}}的帖子列表
     <br />
-    当前第{{pageMessage.currentPage}}页
+    当前第{{pageMessage.page}}页
     <br />
-    每页{{pageMessage.pageSize}}条记录
+    每页{{pageMessage.size}}条记录
     <br />
-    共{{pageMessage.totalCount}}条记录(该参数由后端提供)
+    共{{pageMessage.count}}条记录(该参数由后端提供)-->
     <div class="pageQuery">
       <el-pagination
         background
-        :page-size="pageMessage.pageSize"
+        :page-size="pageMessage.size"
         :pager-count="5"
         @current-change="handleCurrentChange"
-        :current-page="pageMessage.currentPage"
+        :current-page="pageMessage.page"
         layout="prev, pager, next"
-        :total="pageMessage.totalCount"
+        :total="pageMessage.count"
       ></el-pagination>
     </div>
   </div>
 </template>
 
 <script>
+import { findPageByUid } from "network/tiezi";
+import BbsListItem from "components/bbsListItem/BbsListItem";
+
 export default {
   name: "ListBbs",
-  components: {},
+  components: { BbsListItem },
   data() {
     return {
       pageMessage: {
-        currentPage: 1,
-        pageSize: 10,
-        totalCount: 500
-      }
+        page: 1,
+        size: 10,
+        count: 1,
+        userId: null
+      },
+      list: []
     };
+  },
+  created() {
+    this.findPageByUid();
   },
   computed: {},
   methods: {
+    //请求
+    findPageByUid() {
+      //获取userId-------------
+      this.pageMessage.userId = this.$route.query.uid
+        ? this.$route.query.uid
+        : window.localStorage.getItem("memberId");
+      findPageByUid(this.pageMessage).then(res => {
+        this.pageMessage.count = res.count;
+        this.list = res.data;
+        console.log(res);
+      });
+    },
+    //跳页
     handleCurrentChange(val) {
-      this.pageMessage.currentPage = val;
+      this.pageMessage.page = val;
+      this.findPageByUid();
     }
   }
 };

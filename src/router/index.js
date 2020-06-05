@@ -2,6 +2,12 @@
 import Vue from "vue"
 import VueRouter from "vue-router"
 
+//重写push
+const routerPush = VueRouter.prototype.push
+VueRouter.prototype.push = function push(location) {
+  return routerPush.call(this, location).catch(error => error)
+}
+
 
 Vue.use(VueRouter)
 
@@ -13,6 +19,12 @@ const router = new VueRouter({
   }, {
     path: '/tools',
     component: () => import("views/mainTools/MainTools")
+  }, {
+    path: '/login',
+    component: () => import("views/mainLogin/MainLogin")
+  }, {
+    path: '/register',
+    component: () => import("views/mainRegister/MainRegister")
   }, {
     path: '/profile',
     component: () => import("views/mainProfile/MainProfile"),
@@ -82,6 +94,25 @@ const router = new VueRouter({
       path: 'guide',
       component: () => import("views/majorGuide/MajorGuide"),
     }, {
+      path: 'search',
+      component: () => import("views/majorSearch/MajorSearch"),
+      children: [{
+        path: '',
+        redirect: 'synthesize'
+      }, {
+        path: 'synthesize',
+        component: () => import("views/searchSynthesize/SearchSynthesize")
+      }, {
+        path: 'bbs',
+        component: () => import("views/searchBbs/SearchBbs")
+      }, {
+        path: 'article',
+        component: () => import("views/searchArticle/SearchArticle")
+      }, {
+        path: 'user',
+        component: () => import("views/searchUser/SearchUser")
+      }]
+    }, {
       path: 'read',
       component: () => import("views/majorRead/MajorRead"),
       children: [{
@@ -118,9 +149,6 @@ const router = new VueRouter({
         }]
       }]
     }]
-  }, {
-    path: '/refresh',
-    component: () => import('utlis/Refresh')
   }],
   mode: 'history'
 })
@@ -137,5 +165,6 @@ router.afterEach((to, from) => {
   //to跳转后的route
 
 })
+
 
 export default router

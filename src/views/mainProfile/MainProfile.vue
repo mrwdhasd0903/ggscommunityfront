@@ -46,6 +46,7 @@ export default {
       switchVal: false
     };
   },
+  mounted() {},
   computed: {},
   methods: {
     switchToolClick(switchVal) {
@@ -83,7 +84,7 @@ export default {
 .profile-main {
   max-width: 694px;
   width: 694px;
-  height: 500px;
+  min-height: 500px;
   float: left;
 }
 /* right */

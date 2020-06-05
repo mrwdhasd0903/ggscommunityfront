@@ -1,7 +1,7 @@
  <!-- 个人主页我的收藏列表 -->
 <template>
   <div class>
-    我的收藏列表
+    {{this.$route.query.uid?'id='+this.$route.query.uid:'我'}}的收藏列表
     <br />
     当前第{{pageMessage.currentPage}}页
     <br />

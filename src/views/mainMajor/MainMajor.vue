@@ -9,7 +9,7 @@
     </div>
     <div class="main-major-right">
       <div class="major-item main-major-banner" :class="{'switch-true':switchVal}">
-        <banner></banner>
+        <banner @bannerLoad="sticky"></banner>
       </div>
       <div class="major-item main-major-enter" :class="{'switch-true':switchVal}">
         <enter-bar></enter-bar>
@@ -65,44 +65,55 @@ export default {
   methods: {
     switchToolClick(switchVal) {
       this.switchVal = switchVal;
+    },
+    // 如果屏幕宽度大于997,则实现吸顶效果 domArr 存放可滚动class
+    sticky() {
+      if (document.documentElement.clientWidth > 997) {
+        let mainMajorRight = document.getElementsByClassName(
+          "main-major-right"
+        )[0];
+        let itemArr = mainMajorRight.getElementsByClassName("major-item");
+        //需要滑动上去的元素
+        const domArr = ["main-major-banner", "main-major-enter"];
+        //计算需要滑动上去的元素总高度
+        this.majorRightHeight = domArr.reduce(function(total, item) {
+          return (
+            total + document.getElementsByClassName(item)[0].offsetHeight + 10
+          );
+        }, 0);
+        //计算需固定元素的位置left量
+        this.majorItemLeft = mainMajorRight.offsetLeft;
+        //计算需固定元素的位置高度
+        for (let i of mainMajorRight.getElementsByClassName("major-item")) {
+          this.majorItemTop.push(i.offsetTop - this.majorRightHeight);
+        }
+        //开启监听
+        this.listenerScroll(() => {
+          if (this.getScrollTop() > this.majorRightHeight) {
+            for (let i in itemArr) {
+              if (i > 0) {
+                itemArr[i].style.position = "fixed";
+                itemArr[i].style.margin = 0;
+                itemArr[i].style.top = this.majorItemTop[i] + "px";
+                itemArr[i].style.left = this.majorItemLeft + "px";
+              }
+            }
+          } else {
+            for (let i in itemArr) {
+              if (i > 0) {
+                itemArr[i].style.position = "";
+                itemArr[i].style.margin = "";
+                itemArr[i].style.top = "";
+                itemArr[i].style.left = "";
+              }
+            }
+          }
+        }, true);
+      }
     }
   },
   mounted() {
-    // 如果屏幕宽度大于997,则实现吸顶效果
-    if (document.documentElement.clientWidth > 997) {
-      let mainMajorRight = document.getElementsByClassName(
-        "main-major-right"
-      )[0];
-      let itemArr = mainMajorRight.getElementsByClassName("major-item");
-      this.majorRightHeight = document.getElementsByClassName(
-        "main-major-banner"
-      )[0].offsetHeight;
-      this.majorItemLeft = mainMajorRight.offsetLeft;
-      for (let i of mainMajorRight.getElementsByClassName("major-item")) {
-        this.majorItemTop.push(i.offsetTop - this.majorRightHeight - 10);
-      }
-      this.listenerScroll(() => {
-        if (this.getScrollTop() > this.majorRightHeight) {
-          for (let i in itemArr) {
-            if (i > 0) {
-              itemArr[i].style.position = "fixed";
-              itemArr[i].style.margin = 0;
-              itemArr[i].style.top = this.majorItemTop[i] + "px";
-              itemArr[i].style.left = this.majorItemLeft + "px";
-            }
-          }
-        } else {
-          for (let i in itemArr) {
-            if (i > 0) {
-              itemArr[i].style.position = "";
-              itemArr[i].style.margin = "";
-              itemArr[i].style.top = "";
-              itemArr[i].style.left = "";
-            }
-          }
-        }
-      });
-    }
+    this.sticky();
   }
 };
 </script>

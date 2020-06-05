@@ -5,7 +5,9 @@
       <router-link
         v-for="(item,index) in menuList"
         :key="index"
-        :to="item.route"
+        :to="{path:item.route,query:{
+          uid:uid
+        }}"
         tag="span"
         active-class="list-active"
       >{{item.title}}</router-link>
@@ -30,10 +32,22 @@ export default {
         { title: "帖子", route: "/profile/list/bbs" },
         { title: "动态", route: "/profile/list/dynamic" },
         { title: "粉丝", route: "/profile/list/myfan" },
-        { title: "关注", route: "/profile/list/myfocus" },
-
-      ]
+        { title: "关注", route: "/profile/list/myfocus" }
+      ],
+      uid: null
     };
+  },
+  watch: {
+    //监听路由变化
+    $route(to, from) {
+      //如果是个人信息页面
+      if (to.path.indexOf("/profile/list") != -1) {
+        this.uid = this.$route.query.uid;
+      }
+    }
+  },
+  mounted() {
+    this.uid = this.$route.query.uid;
   },
   computed: {},
   methods: {}

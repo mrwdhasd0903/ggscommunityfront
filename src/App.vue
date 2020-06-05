@@ -11,6 +11,7 @@
 </template>
 
 <script>
+import { setCookie, getCookie } from "utlis/cookie";
 import MainNavBar from "views/mainNavBar/MainNavBar";
 import Backtop from "components/backtop/Backtop";
 let _this;
@@ -26,7 +27,8 @@ export default {
       scrollTop: 0
     };
   },
-
+  //从cookie获取头像
+  beforeUpdate() {},
   // 提供可注入子组件属性
   provide() {
     return {
@@ -86,9 +88,13 @@ export default {
     getScrollTop() {
       return this.scrollTop;
     },
-    //滚动事件
-    listenerScroll(callback) {
-      this.$refs.rootRrouter.addEventListener("scroll", callback);
+    //滚动事件监听
+    listenerScroll(callback, flag) {
+      if (flag) {
+        this.$refs.rootRrouter.addEventListener("scroll", callback);
+      } else {
+        this.$refs.rootRrouter.removeEventListener("scroll", callback);
+      }
     }
   }
 };

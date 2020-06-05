@@ -50,51 +50,7 @@
     contrast = Xcontrast; //接收截图框宽高比
     controlPointSize = XcontrolPointSize; //接收控制点大小
     themeColor = XthemeColor; //接收截图框颜色
-    /**----------创建初始组件和结点------------**/
-    let bodyContainer = document.createElement("div");
-    bodyContainer.innerHTML = `
-  <div id="container">
-    <div id="btnDiv">
-      <button id="confirmBtn">` + btnText + `</button>
-    </div>
-    <div id="imgDiv" style="display: none;"></div>
-  </div>`;
-    document.body.insertBefore(bodyContainer, document.body.lastElementChild);
-    myCanvas = document.createElement('canvas');
-    myCanvas.setAttribute('id', 'myCanvas');
-    myCanvas.innerText = '您的浏览器不支持 HTML5 canvas 标签。';
-    myCanvas.style.zIndex = 19990903;
-    /**---------创建初始组件------------**/
 
-    /**---------获取初始组件-----------**/
-    container = document.getElementById('container');
-    imgDiv = document.getElementById('imgDiv'); // 存放mycanvas
-    btnDiv = document.getElementById('btnDiv');
-    confirmBtn = document.getElementById('confirmBtn'); // 确认截图按钮
-    oRelDiv = document.createElement("div"); // 截图框
-    /**---------获取初始组件-----------**/
-
-    /**-------------设置样式---------**/
-    imgDiv.style.left = 224.5;
-    imgDiv.style.top = 355.5;
-    imgDiv.style.position = 'fixed';
-    container.style.position = "fixed";
-    container.style.top = 0;
-    container.style.zIndex = 19990903;
-    btnDiv.style.height = '30px';
-    btnDiv.style.position = 'fixed';
-    btnDiv.style.zIndex = 19990903;
-    confirmBtn.style.background = themeColor
-    confirmBtn.style.border = "none"
-    confirmBtn.style.color = textColor
-    confirmBtn.style.borderRadius = "2px"
-    confirmBtn.style.padding = "4px"
-    confirmBtn.style.position = "fixed"
-    confirmBtn.style.bottom = '40px'
-    confirmBtn.style.left = '50%'
-    confirmBtn.style.zIndex = 199909039
-
-    /**-------------设置样式---------**/
 
     /**------------图片加载---------------**/
     img = new Image();
@@ -138,30 +94,73 @@
     };
     /**------------图片加载---------------**/
 
-
-
-
     /**------------图片选择-------------**/
     fileInput = document.createElement('input');
     fileInput.setAttribute('multiple', 'multiple');
     fileInput.setAttribute('type', 'file');
     fileInput.setAttribute('id', 'fileInput');
+    /**------------图片选择-------------**/
+    //选择完毕,监听文件选择控件
     fileInput.addEventListener('change', function () {
+      /**----------创建初始组件和结点------------**/
+      let bodyContainer;
+      bodyContainer = document.createElement("div");
+      bodyContainer.innerHTML = `
+    <div id="container">
+      <div id="btnDiv">
+        <button id="confirmBtn">` + btnText + `</button>
+      </div>
+      <div id="imgDiv" style="display: none;"></div>
+    </div>`;
+      document.body.insertBefore(bodyContainer, document.body.lastElementChild);
+      myCanvas = document.createElement('canvas');
+      myCanvas.setAttribute('id', 'myCanvas');
+      myCanvas.innerText = '您的浏览器不支持 HTML5 canvas 标签。';
+      myCanvas.style.zIndex = 19990903;
+      /**---------创建初始组件------------**/
+
+      /**---------获取初始组件-----------**/
+      container = document.getElementById('container');
+      imgDiv = document.getElementById('imgDiv'); // 存放mycanvas
+      btnDiv = document.getElementById('btnDiv');
+      confirmBtn = document.getElementById('confirmBtn'); // 确认截图按钮
+      oRelDiv = document.createElement("div"); // 截图框
+      /**---------获取初始组件-----------**/
+
+      /**-----------设置组件样式---------**/
+      imgDiv.style.left = 224.5;
+      imgDiv.style.top = 355.5;
+      imgDiv.style.position = 'fixed';
+      container.style.position = "fixed";
+      container.style.top = 0;
+      container.style.zIndex = 19990903;
+      btnDiv.style.height = '30px';
+      btnDiv.style.position = 'fixed';
+      btnDiv.style.zIndex = 19990903;
+      confirmBtn.style.background = themeColor
+      confirmBtn.style.border = "none"
+      confirmBtn.style.color = textColor
+      confirmBtn.style.borderRadius = "2px"
+      confirmBtn.style.padding = "4px"
+      confirmBtn.style.position = "fixed"
+      confirmBtn.style.bottom = '40px'
+      confirmBtn.style.left = '50%'
+      confirmBtn.style.zIndex = 199909039
+      /**-------------设置样式---------**/
+      /**----------确认截图-------------**/
+      confirmBtn.addEventListener("click", () => {
+        //进行确认截图后的操作
+        cropImage();
+        //删除结点
+        container.parentElement.removeChild(container);
+        //回调函数
+        callback();
+      });
+      /**----------确认截图-------------**/
       img.src = getObjectURL(this.files[0]);
     });
     fileInput.click();
-    /**------------图片选择-------------**/
-    /**----------确认截图-------------**/
-    confirmBtn.addEventListener("click", () => {
-      cropImage();
-      //删除结点
-      container.parentElement.removeChild(container);
-      //回调函数
-      callback();
-    });
-    /**----------确认截图-------------**/
   };
-  /**--------------触发函数结束-------------------**/
 
   /**---------------------工具函数---------------------**/
   //获取文件url

@@ -1,44 +1,61 @@
 <!-- 个人主页动态列表 -->
 <template>
   <div class>
-    我的动态列表
+    {{this.$route.query.uid?'id='+this.$route.query.uid:'我'}}的动态列表
     <br />
-    当前第{{pageMessage.currentPage}}页
+    当前第{{pageMessage.page}}页
     <br />
-    每页{{pageMessage.pageSize}}条记录
+    每页{{pageMessage.size}}条记录
     <br />
-    共{{pageMessage.totalCount}}条记录(该参数由后端提供)
+    共{{pageMessage.count}}条记录(该参数由后端提供)
     <div class="pageQuery">
       <el-pagination
         background
-        :page-size="pageMessage.pageSize"
+        :page-size="pageMessage.size"
         :pager-count="5"
         @current-change="handleCurrentChange"
-        :current-page="pageMessage.currentPage"
+        :current-page="pageMessage.page"
         layout="prev, pager, next"
-        :total="pageMessage.totalCount"
+        :total="pageMessage.count"
       ></el-pagination>
     </div>
   </div>
 </template>
 
 <script>
+import { findPageByUid } from "network/dynamic";
 export default {
   name: "ListDynamic",
   components: {},
   data() {
     return {
       pageMessage: {
-        currentPage: 1,
-        pageSize: 10,
-        totalCount: 500
+        page: 1,
+        size: 10,
+        count: 1,
+        uid: null
       }
     };
   },
-  computed: {},
+  created() {
+    this.findPageByUid();
+  },
   methods: {
+    //请求
+    findPageByUid() {
+      //获取userId-------------
+      this.pageMessage.uid = this.$route.query.uid
+        ? this.$route.query.uid
+        : window.localStorage.getItem("memberId");
+      findPageByUid(this.pageMessage).then(res => {
+        this.pageMessage.count = res.count;
+        this.list = res.data;
+        console.log(res);
+      });
+    },
+    //跳页
     handleCurrentChange(val) {
-      this.pageMessage.currentPage = val;
+      this.pageMessage.page = val;
     }
   }
 };

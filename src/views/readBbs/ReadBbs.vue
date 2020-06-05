@@ -10,7 +10,11 @@
         :min="1"
         v-model="checkboxGroup"
       >
-        <el-checkbox-button v-for="city in cities" :label="city" :key="city">{{city}}</el-checkbox-button>
+        <el-checkbox-button
+          v-for="(item,index) in type"
+          :label="String(item.tid)"
+          :key="'type'+index"
+        >{{item.name}}</el-checkbox-button>
       </el-checkbox-group>
       <span @click="bbsSwitchClick" id="bbsSwitch" class="el-icon-arrow-down"></span>
     </div>
@@ -23,40 +27,48 @@
 
 <script>
 import { setCookie, getCookie } from "utlis/cookie";
+import { findByDelFlag } from "network/topic";
 export default {
   name: "ReadBbs",
   components: {},
   data() {
     return {
-      checkboxGroup: [
-        "失物寻物区",
-        "知识讨论区",
-        "卖物买物区",
-        "娱乐灌水区",
-        "真情求缘区",
-        "手游开黑区",
-        "端游开黑区",
-        "不造什么区",
-        "用来凑数区"
-      ],
-      cities: [
-        "失物寻物区",
-        "知识讨论区",
-        "卖物买物区",
-        "娱乐灌水区",
-        "真情求缘区",
-        "手游开黑区",
-        "端游开黑区",
-        "不造什么区",
-        "用来凑数区"
-      ],
+      checkboxGroup: [],
+      type: [],
       bbsBarHeight: "auto",
       bbsSwitchVal: false,
+      //用于刷新路由
       activeDate: 1
     };
   },
-  computed: {},
   methods: {
+    //请求获取类型
+    getType() {
+      findByDelFlag({ page: 1, size: 100 }).then(res => {
+        if (res.code == 0) {
+          this.type = res.data;
+        } else {
+          console.log(res);
+        }
+      });
+    },
+    //请求获取类型(已选)
+    getType2checkboxGroup() {
+      findByDelFlag({ page: 1, size: 100 }).then(res => {
+        if (res.code == 0) {
+          this.checkboxGroup = res.data.map(item => {
+            return String(item.tid);
+          });
+          console.log(this.checkboxGroup);
+          this.passDivide();
+        } else {
+          console.log(res);
+        }
+      });
+    },
+    String(num) {
+      return String(num);
+    },
     //伸缩开关点击
     bbsSwitchClick() {
       this.bbsSwitchVal = !this.bbsSwitchVal;
@@ -70,15 +82,17 @@ export default {
     },
     //路由传参
     passDivide() {
-      setCookie("bbsdivide", this.checkboxGroup);
+      setCookie("bbsdivide", this.checkboxGroup,10);
+      console.log(this.checkboxGroup);
       this.activeDate++;
     },
     //设置CheckboxGroup
     setCheckboxGroup() {
+      this.getType();
       if (getCookie("bbsdivide")) {
         this.checkboxGroup = getCookie("bbsdivide").split(",");
       } else {
-        this.passDivide();
+        this.getType2checkboxGroup();
       }
     }
   },
@@ -91,7 +105,6 @@ export default {
     } else {
       document.getElementById("bbsSwitch").style.display = "none";
     }
-
     //根据cookie设置CheckboxGroup的值
     this.setCheckboxGroup();
   }

@@ -1,64 +1,59 @@
 <!-- 帖子分类选择-->
 <template>
-  <div class>
-    <ul>
-      <router-link
-        tag="li"
-        v-for="(item,index) in list"
-        :to="'/major/bbsdetails/'+index"
-        :key="index"
-      >{{item.title}}{{index}}</router-link>
-    </ul>
+  <div class="bbs-divide">
+    <bbs-list-item v-for="(item,index) in list" :item="item" :key="'BbsListItem'+index"></bbs-list-item>
     <div v-loading="loading" ref="loading" class="loading"></div>
   </div>
 </template>
 
 <script>
 import { getCookie } from "utlis/cookie";
+import BbsListItem from "components/bbsListItem/BbsListItem";
+import { findPage } from "network/tiezi";
 
 export default {
   name: "BbsDivide",
-  components: {},
+  components: { BbsListItem },
   data() {
     return {
+      pageData: { page: 1, size: 10 },
       loading: false,
       scrollTop: 0,
-      push: [
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") }
-      ],
-      list: [
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") },
-        { title: getCookie("bbsdivide") }
-      ]
+      list: []
     };
   },
   computed: {},
   activated() {
-    //组件激活时 回滚
+    //组件激活时 回滚 开启监听
     this.rootRrouterScrollTo(this.scrollTop);
+    this.listenerScroll(this.pushList, true);
   },
   deactivated() {
     //组件停用时 记录滚动高度
     this.scrollTop = this.getScrollTop();
+    this.listenerScroll(this.pushList, false);
   },
   methods: {
+    getList() {
+      findPage(this.pageData).then(res => {
+        if (res.code == 0) {
+          if (res.data.length == 0) {
+            this.$message({
+              showClose: true,
+              message: "到尽头啦",
+              center: true,
+              type: "warning",
+              offset: 100
+            });
+          } else {
+            this.pageData.page++;
+          }
+          this.list = this.list.concat(res.data);
+        } else {
+          console.log(res);
+        }
+      });
+    },
     pushList() {
       try {
         //因为在路由销毁后还是会监听事件并执行下面代码,但是获取不到loading导致报错
@@ -69,27 +64,23 @@ export default {
         ) {
           this.loading = true;
           setTimeout(() => {
-            this.list = this.list.concat(this.push);
+            this.getList();
             this.loading = false;
-          }, 2000);
+          }, 1000);
         }
-      } catch (err) {
-        console.log();
-      }
+      } catch (err) {}
     }
   },
   //获取来自跟路由的滚动高度和滚动监听
   inject: ["getScrollTop", "listenerScroll", "rootRrouterScrollTo"],
   mounted() {
-    this.listenerScroll(this.pushList);
+    this.getList();
+    this.listenerScroll(this.pushList, true);
   }
 };
 </script>
 
 <style scoped>
-li {
-  line-height: 150px;
-}
 .loading {
   height: 100px;
 }

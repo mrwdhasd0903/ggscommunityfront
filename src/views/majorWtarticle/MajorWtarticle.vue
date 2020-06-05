@@ -6,7 +6,7 @@
       @click.native="addCover"
       @error="coverLoad(false)"
       @load="coverLoad(true)"
-      :src="coverSrc.src"
+      :src="article.coverSrc"
     >
       <div slot="error" class="article-cover">
         <i class="el-icon-circle-plus-outline">
@@ -16,66 +16,100 @@
       </div>
     </el-image>
     <div class="wtarticle-title">
-      <input placeholder="在这里输入标题" v-model="wtarticleTitle" type="text" />
+      <input placeholder="在这里输入标题" v-model="article.title" type="text" />
     </div>
+    <el-select
+      :multiple-limit="6"
+      class="tagSelect"
+      v-model="article.tagList"
+      multiple
+      filterable
+      allow-create
+      default-first-option
+      placeholder="可最多添加6个标签"
+    >
+      <el-option
+        v-for="item in tagList"
+        :key="'tagList'+item.id"
+        :label="item.name"
+        :value="item.id"
+      ></el-option>
+    </el-select>
+    <el-dropdown class="typeSelect">
+      <el-button class="el-icon-arrow-down">{{currTypeName||'选择分类'}}</el-button>
+      <el-dropdown-menu slot="dropdown" class="dropdown">
+        <el-dropdown-item
+          v-for="(item,index) in typeList"
+          @click.native="setType(item)"
+          :key="'typeList'+index"
+        >{{item.name}}</el-dropdown-item>
+      </el-dropdown-menu>
+    </el-dropdown>
+
+    <el-button @click="articlePost" class="postBtn" type="primary" plain>提交</el-button>
     <div class="del-cover el-icon-delete" @click="delCover" v-if="delSwitch">删除封面</div>
     <div class="articleEditortitle"></div>
-    <div class="articleEditor" @click="editorClick"></div>
+    <div class="articleEditor">
+      <mavon-editor style="z-index: 9999 !important;" v-model="article.content"></mavon-editor>
+    </div>
   </div>
 </template>
 
 <script>
-import E from "wangeditor";
-import screenshots from "utlis/screenshots.js";
+import screenshots from "utlis/screenshots";
+import { dataURLtoFile } from "utlis/dataURLtoFile";
+import { uploadOss } from "network/upload";
 
-const editor = new E(".articleEditortitle", ".articleEditor");
-// 自定义菜单配置
-editor.customConfig.menus = [
-  "bold", // 粗体
-  "fontSize", // 字号
-  "fontName", // 字体
-  "italic", // 斜体
-  "underline", // 下划线
-  "strikeThrough", // 删除线
-  "foreColor", // 文字颜色
-  "backColor", // 背景颜色
-  "link", // 插入链接
-  "list", // 列表
-  "justify", // 对齐方式
-  "quote", // 引用
-  "emoticon", // 表情
-  "image", // 插入图片
-  "table", // 表格
-  "video", // 插入视频
-  "code", // 插入代码
-  "undo", // 撤销
-  "redo", // 重复
-  "head" // 标题
-];
 export default {
   name: "MajorWtarticle",
   components: {},
   data() {
     return {
+      tagList: [
+        { id: "1001", name: "HTML" },
+        { id: "1002", name: "CSS" },
+        { id: "1003", name: "JavaScript" }
+      ],
       delSwitch: false,
-      coverSrc: "",
-      wtarticleTitle: ""
+      typeList: [
+        { name: "分类一", id: "1001" },
+        { name: "分类二", id: "1002" },
+        { name: "分类三", id: "1004" },
+        { name: "分类四", id: "1005" },
+        { name: "分类五", id: "1006" },
+        { name: "分类六", id: "1007" }
+      ],
+      currTypeName: "",
+      article: {
+        content: "",
+        title: "",
+        coverSrc: "",
+        typeId: "",
+        tagList: []
+      }
     };
   },
-  mounted() {
-    editor.create();
-  },
+  mounted() {},
   computed: {},
   methods: {
+    //选择分类
+    setType(type) {
+      this.article.typeId = type.id;
+      this.currTypeName = type.name;
+    },
     //删除封面
     delCover() {
-      this.coverSrc = "";
+      this.article.coverSrc = "";
     },
     //显示删除按钮
     coverLoad(flag) {
       this.delSwitch = flag;
     },
-    //截图封面
+    //提交
+    articlePost() {
+      console.log(this.article);
+    },
+    //截图封面上传
     addCover() {
       screenshots.uploadImg(
         "截取封面",
@@ -84,21 +118,53 @@ export default {
         20,
         "#409EFF",
         () => {
-          this.coverSrc = screenshots.getNewImg().cloneNode(true);
+          this.article.coverSrc = screenshots.getNewImg().cloneNode(true).src;
+          var formData = new FormData();
+          formData.append(
+            "file",
+            dataURLtoFile(this.article.coverSrc, "articleCover.jpg")
+          );
+          console.log(dataURLtoFile(this.article.coverSrc, "articleCover"));
+          formData.append("folder", "image");
+          uploadOss(formData).then(res => {
+            if (res.code == 0) {
+              this.article.coverSrc = res.data[0].url;
+              this.$message({
+                showClose: true,
+                message: "已上传",
+                type: "success",
+                center: true,
+                offset: 100
+              });
+            } else {
+              this.$message.error({
+                showClose: true,
+                message: "上传失败,请重新上传",
+                center: true,
+                offset: 100
+              });
+            }
+          });
         }
       );
-    },
-    //点击空白处获得光标
-    editorClick(event) {
-      if (event.currentTarget == event.target) {
-        editor.txt.append("");
-      }
     }
   }
 };
 </script>
-
+<style>
+.el-select-dropdown {
+  z-index: 9999 !important;
+}
+</style>
 <style scoped>
+.dropdown {
+  z-index: 9999 !important;
+}
+.tagSelect,
+.typeSelect,
+.postBtn {
+  margin: 10px 0 10px 30px;
+}
 .wtarticle-title input {
   height: 30px;
   font-size: 25px;

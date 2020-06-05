@@ -1,7 +1,7 @@
 <!--banner栏-->
 <template >
   <a v-if="banner.switch" target="_blank" :href="banner.href">
-    <img :src="banner.src" alt />
+    <img :src="banner.src" @load="bannerLoad" alt />
   </a>
 </template>
 
@@ -14,14 +14,18 @@ export default {
       banner: {
         //图片地址
         src:
-          "http://47.113.92.137:8888/upload/img/2020/03/07-08-55==075449.jpg",
+          "https://th.wallhaven.cc/lg/dg/dgzj9o.jpg",
         href: "#", //链接地址
         switch: true //是否展示
       }
     };
   },
   computed: {},
-  methods: {}
+  methods: {
+    bannerLoad() {
+      this.$emit("bannerLoad");
+    }
+  }
 };
 </script>
 

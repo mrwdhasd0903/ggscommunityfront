@@ -1,12 +1,11 @@
 import axios from 'axios'
 //解决跨域sessionId问题
-axios.defaults.withCredentials = true
+// axios.defaults.withCredentials = true
 export function request(config) {
   // 1 创建axios实例
   const instance = axios.create({
-    baseURL: "http://47.113.92.137:8888",
+    baseURL: "http://kxinggs.cn:8080/web-portal/",
     timeout: 20000,
-    //解决跨域session问题
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     },
@@ -22,16 +21,22 @@ export function request(config) {
   // 2 axios拦截器
   // 2.1 请求拦截器
   instance.interceptors.request.use(config => {
-    // console.log(config);
-    return config
-
+    //携带token
+    config.headers.common['token'] = window.localStorage.getItem('token') ? window.localStorage.getItem('token') : "";
+    config.headers.common['memberId'] = window.localStorage.getItem('memberId') ? window.localStorage.getItem('memberId') : ""
+    return config;
   }, err => {
     console.log(err);
   })
 
   // 2.2 响应拦截器
   instance.interceptors.response.use(res => {
+    // if (res.data.data) {
+    //   return res.data.data
+    // } else {
+    window.localStorage.setItem("token", res.headers.token)
     return res.data
+    // }
   }, err => {
     console.log(err);
   })

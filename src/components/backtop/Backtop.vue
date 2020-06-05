@@ -29,7 +29,7 @@ export default {
 .backtop {
   cursor: pointer;
   position: fixed;
-  bottom: 50px;
+  bottom: 52px;
   right: 100px;
   width: 40px;
   height: 40px;

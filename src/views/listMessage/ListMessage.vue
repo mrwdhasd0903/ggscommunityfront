@@ -1,7 +1,7 @@
 <!-- 个人主页信息列表 -->
 <template>
   <div class>
-    我的信息列表
+     {{this.$route.query.uid?'id='+this.$route.query.uid:'我'}}的信息列表
     <br />
     当前第{{pageMessage.currentPage}}页
     <br />

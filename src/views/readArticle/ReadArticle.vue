@@ -10,7 +10,11 @@
         :min="1"
         v-model="checkboxGroup"
       >
-        <el-checkbox-button v-for="city in cities" :label="city" :key="city">{{city}}</el-checkbox-button>
+        <el-checkbox-button
+          v-for="(item,index) in type"
+          :label="item.articleTypeId"
+          :key="'type'+index"
+        >{{item.articleTypeName}}</el-checkbox-button>
       </el-checkbox-group>
       <span @click="articleSwitchClick" id="articleSwitch" class="el-icon-arrow-down"></span>
     </div>
@@ -23,40 +27,44 @@
 
 <script>
 import { setCookie, getCookie } from "utlis/cookie";
+import { findPage } from "network/articleType";
 export default {
   name: "ReadArticle",
   components: {},
   data() {
     return {
-      checkboxGroup: [
-        "生活记录类",
-        "学术分享类",
-        "党文团文类",
-        "新闻资讯类",
-        "想不出来类",
-        "绞尽脑汁类",
-        "随便写写类",
-        "不造什么类",
-        "用来凑数类"
-      ],
-      cities: [
-        "生活记录类",
-        "学术分享类",
-        "党文团文类",
-        "新闻资讯类",
-        "想不出来类",
-        "绞尽脑汁类",
-        "随便写写类",
-        "不造什么类",
-        "用来凑数类"
-      ],
+      checkboxGroup: [],
+      type: [],
       articleBarHeight: "auto",
       articleSwitchVal: false,
+      //用于刷新路由
       activeDate: 1
     };
   },
-  computed: {},
   methods: {
+    //请求获取类型
+    getType() {
+      findPage({ page: 1, size: 100 }).then(res => {
+        if (res.code == 0) {
+          this.type = res.data;
+        } else {
+          console.log(res);
+        }
+      });
+    },
+    //请求获取类型(已选)
+    getType2checkboxGroup() {
+      findPage({ page: 1, size: 100 }).then(res => {
+        if (res.code == 0) {
+          this.checkboxGroup = res.data.map(item => {
+            return item.articleTypeId;
+          });
+          this.passDivide();
+        } else {
+          console.log(res);
+        }
+      });
+    },
     //伸缩开关点击
     articleSwitchClick() {
       this.articleSwitchVal = !this.articleSwitchVal;
@@ -74,18 +82,21 @@ export default {
     },
     //路由传参
     passDivide() {
-      setCookie("articledivide", this.checkboxGroup);
+      setCookie("articledivide", this.checkboxGroup,10);
+      console.log(this.checkboxGroup);
       this.activeDate++;
     },
     //设置CheckboxGroup
     setCheckboxGroup() {
+      this.getType();
       if (getCookie("articledivide")) {
         this.checkboxGroup = getCookie("articledivide").split(",");
       } else {
-        this.passDivide();
+        this.getType2checkboxGroup();
       }
     }
   },
+
   mounted() {
     //伸缩高度调整
     let articleBar = document.getElementById("articleBar");

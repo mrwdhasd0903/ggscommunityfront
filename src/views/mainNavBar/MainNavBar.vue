@@ -1,9 +1,9 @@
- <!-- 导航栏 -->
+<!-- 导航栏 -->
 <template>
   <div id="navBar" class="nav-bar">
     <div class="in-nav-bar">
       <div class="logo">
-        <img src="http://47.113.92.137:8888/img/theme/logo.png" @load="setNavTop" />
+        <img src="~assets/logo.png" @load="setNavTop" />
       </div>
       <div @mouseleave="replyCurrentNav" class="plate-bar" ref="MainHeader">
         <router-link
@@ -26,6 +26,7 @@
           @select="handleSelect"
           @blur="navSearch"
           @focus="navSearchFocus"
+          ref="searchInput"
           suffix-icon="el-icon-search"
         ></el-autocomplete>
         <!-- <el-button size="small" type="primary">搜索</el-button> -->
@@ -45,26 +46,37 @@
       </div>
       <div class="person">
         <el-dropdown>
-          <img type="primary" src="http://47.113.92.137:8888/img/theme/headimg_sm.jpg" />
+          <el-image class="personimg" :src="userData.headimg">
+            <div slot="error" class="image-slot">
+              <i class="el-icon-user-solid"></i>
+            </div>
+          </el-image>
+          <!-- <img type="primary"  /> -->
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item>
-              <router-link tag="span" to="/profile" class="el-icon-user-solid">个人主页</router-link>
+            <el-dropdown-item v-if="userData.headimg">
+              <router-link tag="span" to="/profile" class="dropdown-item el-icon-user-solid">个人主页</router-link>
+            </el-dropdown-item>
+            <el-dropdown-item v-if="userData.headimg">
+              <span class="dropdown-item el-icon-s-tools">账号设置</span>
             </el-dropdown-item>
             <el-dropdown-item>
-              <span class="el-icon-s-tools">账号设置</span>
-            </el-dropdown-item>
-            <el-dropdown-item>
-              <span class="el-icon-switch-button">退出登录</span>
+              <router-link
+                tag="span"
+                to="/login"
+                @click.native="logout"
+                class="dropdown-item el-icon-switch-button"
+              >{{userData.headimg?'退出登录':'登陆'}}</router-link>
             </el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
-        <span class="el-icon-arrow-down" id="navSwitch" @click="navSwitchClick"></span>
+        <span class="dropdown-item el-icon-arrow-down" id="navSwitch" @click="navSwitchClick"></span>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { setCookie, getCookie } from "utlis/cookie";
 export default {
   name: "MainNavBar",
   components: {
@@ -83,12 +95,13 @@ export default {
       haveNewMessage: false,
       haveNewChat: true,
       navSwitchVal: false,
-      navBarTop: 0
+      navBarTop: 0,
+      userData: { headimg: "" }
     };
   },
   watch: {
-    //监听路由回复下划线
-    $route: "replyCurrentNav"
+    //监听路由恢复下划线
+    $route: ["replyCurrentNav", "login"]
   },
   computed: {},
   methods: {
@@ -103,11 +116,27 @@ export default {
     //输入框点击触发
     navSearchFocus() {
       document.getElementsByClassName("inline-input")[0].style.width = "100%";
+      //监听回车键盘
+      document.onkeydown = e => {
+        if (e.keyCode == 13) {
+          this.$refs.searchInput.$refs.input.blur();
+        }
+      };
     },
     //搜索
     navSearch() {
       document.getElementsByClassName("inline-input")[0].style.width = "60%";
-      console.log(this.state);
+      //判断当前路由是否已在搜索
+      let path =
+        this.$route.path.indexOf("/major/search") != -1
+          ? this.$route.path
+          : "/major/search";
+      if (this.state != "") {
+        this.$router.push({
+          path: path,
+          query: { key: this.state }
+        });
+      }
     },
     //回复至和路由相同的控制器
     replyCurrentNav() {
@@ -291,10 +320,19 @@ export default {
         document.getElementById("navSwitch").style.transform = "rotateX(0deg)";
         document.getElementById("navBar").style.top = this.navBarTop;
       }
+    },
+    //清除信息
+    logout() {
+      this.userData.headimg = "";
+    },
+    //设置信息
+    login() {
+      this.userData.headimg = getCookie("headimg");
     }
   },
   created() {},
   mounted() {
+    this.userData.headimg = getCookie("headimg");
     this.restaurants = this.loadAll();
     this.setNavTop();
     this.replyCurrentNav();
@@ -305,6 +343,13 @@ export default {
 .search span {
   cursor: pointer;
   color: #409eff;
+}
+.person img {
+  margin-top: 11px;
+  border-radius: 2px;
+}
+.person i {
+  font-size: 20px;
 }
 </style>
 <style scoped>
@@ -354,6 +399,9 @@ export default {
 span {
   cursor: pointer;
 }
+.dropdown-item {
+  padding: 8px 10px;
+}
 .logo,
 .person,
 .message-bar,
@@ -370,9 +418,7 @@ span {
   flex-grow: 1;
   white-space: nowrap;
 }
-.person img {
-  border-radius: 2px;
-  margin-top: 11px;
+.person .personimg {
   width: 31px;
 }
 img {

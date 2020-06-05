@@ -15,13 +15,13 @@
         <div class="fan">
           <div>
             <p>
-              <span>{{fanData[0]}}</span>
+              <span>{{fanData[0].count}}</span>
             </p>
             <p>粉丝</p>
           </div>
           <div>
             <p>
-              <span>{{fanData[1]}}</span>
+              <span>{{fanData[1].count}}</span>
             </p>
             <p>关注</p>
           </div>
@@ -42,7 +42,10 @@ export default {
         { val: 135, text: "次收藏", ico: "el-icon-star-on" },
         { val: 608, text: "阅读量", ico: "el-icon-s-help" }
       ],
-      fanData: [64, 5]
+      fanData: [
+        { name: "粉丝", count: "64" },
+        { name: "关注", count: "5" }
+      ]
     };
   },
   computed: {},

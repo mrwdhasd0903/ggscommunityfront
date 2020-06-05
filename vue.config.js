@@ -17,4 +17,5 @@ module.exports = {
     //   'highlight.js':'hljs'
     // }
   },
+  // publicPath: './' 
 }
